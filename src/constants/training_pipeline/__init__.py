@@ -14,13 +14,11 @@ ETL related constant start with ETL var name
 ETL_DIR_NAME: str = "etl"
 ETL_RAW_DATA_FILE_NAME: str = "raw.csv"
 ETL_RAW_SCHEMA_FILE_NAME: str = "raw_schema.json"
-ETL_METADATA_FILE_NAME: str = "metadata.json"
+ETL_METADATA_FILE_NAME: str = "etl_metadata.json"
 
 """
 Data Ingestion related constant start with DATA_INGESTION var name
 """
-DATA_INGESTION_COLLECTION_NAME: str = os.getenv("MONGODB_COLLECTION")
-DATA_INGESTION_DATABASE_NAME: str = os.getenv("MONGODB_DATABASE")
 DATA_INGESTION_DIR_NAME: str = "data_ingestion"
 DATA_INGESTION_TRAIN_FILE_NAME: str = "train.csv"
 DATA_INGESTION_TEST_FILE_NAME: str = "test.csv"
@@ -28,5 +26,4 @@ DATA_INGESTION_VAL_FILE_NAME: str = "val.csv"
 DATA_INGESTION_SCHEMA_FILE_NAME: str = "generated_schema.json"
 DATA_INGESTION_META_FILE_NAME: str = "meta_data.json"
 DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO: float = 0.15
-DATA_INGESTION_MONGODB_URL: str = os.getenv("MONGODB_URL")
 DATA_INGESTION_RANDOM_STATE: str = 42

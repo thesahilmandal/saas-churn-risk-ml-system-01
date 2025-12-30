@@ -3,3 +3,4 @@ certifi == 2025.11.12
 python_dotenv
 pandas
 kagglehub
+scikit-learn

@@ -134,3 +134,5 @@ gcp_credentials/
 ############################################
 rough/
 project_folder.py
+main.py
+test_mongodb.py
