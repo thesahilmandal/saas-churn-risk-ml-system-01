@@ -1,0 +1,132 @@
+dataset:
+  name: customer_churn
+  target_column: Churn
+
+columns:
+
+  customerID:
+    expected_dtype: object
+    nullable: false
+    unique: true
+    severity: error
+
+  gender:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Male", "Female"]
+    severity: warning
+
+  SeniorCitizen:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No"]
+    severity: error
+
+  Partner:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No"]
+    severity: warning
+
+  Dependents:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No"]
+    severity: warning
+
+  tenure:
+    expected_dtype: int64
+    nullable: false
+    min: 0
+    severity: error
+
+  PhoneService:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No"]
+    severity: warning
+
+  MultipleLines:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No", "No phone service"]
+    severity: warning
+
+  InternetService:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["DSL", "Fiber optic", "No"]
+    severity: warning
+
+  OnlineSecurity:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No", "No internet service"]
+    severity: warning
+
+  OnlineBackup:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No", "No internet service"]
+    severity: warning
+
+  DeviceProtection:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No", "No internet service"]
+    severity: warning
+
+  TechSupport:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No", "No internet service"]
+    severity: warning
+
+  StreamingTV:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No", "No internet service"]
+    severity: warning
+
+  StreamingMovies:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No", "No internet service"]
+    severity: warning
+
+  Contract:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Month-to-month", "One year", "Two year"]
+    severity: warning
+
+  PaperlessBilling:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No"]
+    severity: warning
+
+  PaymentMethod:
+    expected_dtype: object
+    nullable: false
+    severity: warning
+
+  MonthlyCharges:
+    expected_dtype: float64
+    nullable: false
+    min: 0.0
+    severity: error
+
+  TotalCharges:
+    raw_dtype_allowed: object
+    expected_dtype: float
+    nullable: true
+    coercible: true
+    min: 0.0
+    severity: warning
+
+  Churn:
+    expected_dtype: object
+    nullable: false
+    allowed_values: ["Yes", "No"]
+    severity: error
