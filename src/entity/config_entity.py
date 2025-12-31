@@ -98,3 +98,44 @@ class DataValidationConfig:
             training_pipeline.DATA_VALIDATION_REPORT_FILE_NAME
         )
         self.reference_schema_file_path = training_pipeline.REFERENCE_SCHEMA_FILE_PATH
+
+
+class DataTransformationConfig:
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+        self.data_transformation_dir: str = os.path.join(
+            training_pipeline_config.artifact_dir,
+            training_pipeline.DATA_TRANSFORMATION_DIR_NAME
+        )
+        self.x_train_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRANSFORMATION_X_TRAIN
+        )
+        self.x_test_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRANSFORMATION_X_TEST
+        )
+        self.x_val_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRANSFORMATION_X_VAL
+        )
+        self.y_train_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRNSFORMATION_Y_TRAIN
+        )
+        self.y_test_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRNSFORMATION_Y_TEST
+        )
+        self.y_val_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRNSFORMATION_Y_VAL
+        )
+        self.metadata_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRANSFORMATION_METADATA
+        )
+        self.preprocessor_file_path: str = os.path.join(
+            self.data_transformation_dir,
+            training_pipeline.DATA_TRNSFORMATION_PREPROCESSOR
+        )
+        

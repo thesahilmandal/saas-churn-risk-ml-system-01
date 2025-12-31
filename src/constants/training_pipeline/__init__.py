@@ -34,3 +34,17 @@ Data validation related constant start with DATA_VALIDATION var name
 """
 DATA_VALIDATION_DIR_NAME: str = 'data_validation'
 DATA_VALIDATION_REPORT_FILE_NAME: str = 'report.json'
+
+
+"""
+Data transformation related constant start with DATA_TRANSFORMATION var name
+"""
+DATA_TRANSFORMATION_DIR_NAME: str = "data_transformation"
+DATA_TRANSFORMATION_X_TRAIN: str = "x_train.npy"
+DATA_TRNSFORMATION_Y_TRAIN: str = "y_train.npy"
+DATA_TRANSFORMATION_X_TEST: str = "x_test.npy"
+DATA_TRNSFORMATION_Y_TEST: str = "y_test.npy"
+DATA_TRANSFORMATION_X_VAL: str = "x_val.npy"
+DATA_TRNSFORMATION_Y_VAL: str = "y_val.npy"
+DATA_TRANSFORMATION_METADATA: str = "transformation_metadata.json"
+DATA_TRNSFORMATION_PREPROCESSOR: str = "preprocessor.pkl"

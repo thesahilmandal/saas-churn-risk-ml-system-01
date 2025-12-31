@@ -17,9 +17,9 @@ columns:
     severity: warning
 
   SeniorCitizen:
-    expected_dtype: object
+    expected_dtype: int64
     nullable: false
-    allowed_values: ["Yes", "No"]
+    allowed_values: [0, 1]
     severity: error
 
   Partner:
@@ -119,7 +119,7 @@ columns:
 
   TotalCharges:
     raw_dtype_allowed: object
-    expected_dtype: float
+    expected_dtype: float64
     nullable: true
     coercible: true
     min: 0.0

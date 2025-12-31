@@ -61,3 +61,29 @@ class DataValidationArtifact:
             f"  validation_report = {self.validation_report}\n"
             ")"
         )
+
+
+@dataclass
+class DataTransformationArtifact:
+    x_train_file_path: str
+    x_test_file_path: str
+    x_val_file_path: str
+    y_train_file_path: str
+    y_test_file_path: str
+    y_val_file_path: str
+    metadata_file_path: str
+    preprocessor_file_path: str
+
+    def __str__(self) -> str:
+        return (
+            "\nDataValidationArtifact(\n"
+            f"  x_train_file_path = {self.x_train_file_path}\n"
+            f"  x_test_file_path = {self.x_test_file_path}\n"
+            f"  x_val_file_path = {self.x_val_file_path}\n"
+            f"  y_train_file_path = {self.y_train_file_path}\n"
+            f"  y_test_file_path = {self.y_test_file_path}\n"
+            f"  y_val_file_path = {self.y_val_file_path}\n"
+            f"  metadata_file_path = {self.metadata_file_path}\n"
+            f"  preprocessor_file_path = {self.preprocessor_file_path}\n"            
+            ")"
+        )
