@@ -87,3 +87,27 @@ class DataTransformationArtifact:
             f"  preprocessor_file_path = {self.preprocessor_file_path}\n"            
             ")"
         )
+
+
+@dataclass
+class ModelTrainerArtifact:
+    """
+    Artifact generated after Model Training stage (multi-model design).
+
+    Stores:
+    - Directory containing all trained models
+    - Path to consolidated training metrics report
+    - Path to model training metadata
+    """
+    trained_models_dir: str
+    metrics_report_file_path: str
+    metadata_file_path: str
+
+    def __str__(self) -> str:
+        return (
+            "\nModelTrainerArtifact(\n"
+            f"  trained_models_dir        = {self.trained_models_dir}\n"
+            f"  metrics_report_file_path  = {self.metrics_report_file_path}\n"
+            f"  metadata_file_path        = {self.metadata_file_path}\n"
+            ")"
+        )

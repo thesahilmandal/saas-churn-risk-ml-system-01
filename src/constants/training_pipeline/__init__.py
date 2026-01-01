@@ -48,3 +48,13 @@ DATA_TRANSFORMATION_X_VAL: str = "x_val.npy"
 DATA_TRNSFORMATION_Y_VAL: str = "y_val.npy"
 DATA_TRANSFORMATION_METADATA: str = "transformation_metadata.json"
 DATA_TRNSFORMATION_PREPROCESSOR: str = "preprocessor.pkl"
+
+
+"""
+Model trainer related constant start with MODEL_TRAINER var name
+"""
+MODEL_TRAINER_DIR_NAME: str = "model_trainer"
+MODEL_TRAINER_MODEL_FILE_NAME: str = "models"
+MODEL_TRAINER_TRAINING_METRICS_FILE_NAME: str = "training_metrics.json"
+MODEL_TRAINER_METADATA_FILE_NAME: str = "model_medata.json"
+MODEL_TRAINER_PRIMARY_METRIC: str = "roc_auc"

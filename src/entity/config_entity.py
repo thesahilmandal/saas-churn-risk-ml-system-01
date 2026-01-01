@@ -138,4 +138,30 @@ class DataTransformationConfig:
             self.data_transformation_dir,
             training_pipeline.DATA_TRNSFORMATION_PREPROCESSOR
         )
-        
+
+
+class ModelTrainerConfig:
+    def __init__(
+        self,
+        training_pipeline_config: TrainingPipelineConfig
+    ) -> None:
+        try:
+            self.model_trainer_dir: str = os.path.join(
+                training_pipeline_config.artifact_dir,
+                training_pipeline.MODEL_TRAINER_DIR_NAME
+            )
+            self.trained_model_file_path: str = os.path.join(
+                self.model_trainer_dir,
+                training_pipeline.MODEL_TRAINER_MODEL_FILE_NAME
+            )
+            self.training_metrics_file_path: str = os.path.join(
+                self.model_trainer_dir,
+                training_pipeline.MODEL_TRAINER_TRAINING_METRICS_FILE_NAME
+            )
+            self.model_metadata_file_path: str = os.path.join(
+                self.model_trainer_dir,
+                training_pipeline.MODEL_TRAINER_METADATA_FILE_NAME
+            )
+            self.primary_metric: str = training_pipeline.MODEL_TRAINER_PRIMARY_METRIC
+        except Exception as e:
+            raise CustomerChurnException(e, sys)
