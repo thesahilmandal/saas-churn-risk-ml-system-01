@@ -76,7 +76,7 @@ class DataTransformationArtifact:
 
     def __str__(self) -> str:
         return (
-            "\nDataValidationArtifact(\n"
+            "\nDataTransformationArtifact(\n"
             f"  x_train_file_path = {self.x_train_file_path}\n"
             f"  x_test_file_path = {self.x_test_file_path}\n"
             f"  x_val_file_path = {self.x_val_file_path}\n"
@@ -109,5 +109,30 @@ class ModelTrainerArtifact:
             f"  trained_models_dir        = {self.trained_models_dir}\n"
             f"  metrics_report_file_path  = {self.metrics_report_file_path}\n"
             f"  metadata_file_path        = {self.metadata_file_path}\n"
+            ")"
+        )
+
+
+@dataclass
+class ModelEvaluationArtifact:
+    """
+    Artifact generated after Model Evaluation stage.
+
+    Stores:
+    - Path to evaluation decision report
+    - Selected model name
+    - Operating decision threshold for inference
+    """
+
+    evaluation_report_file_path: str
+    selected_model_name: str
+    operating_threshold: float
+
+    def __str__(self) -> str:
+        return (
+            "\nModelEvaluationArtifact(\n"
+            f"  evaluation_report_file_path = {self.evaluation_report_file_path}\n"
+            f"  selected_model_name         = {self.selected_model_name}\n"
+            f"  operating_threshold         = {self.operating_threshold}\n"
             ")"
         )

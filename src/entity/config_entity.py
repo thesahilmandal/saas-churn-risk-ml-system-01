@@ -165,3 +165,27 @@ class ModelTrainerConfig:
             self.primary_metric: str = training_pipeline.MODEL_TRAINER_PRIMARY_METRIC
         except Exception as e:
             raise CustomerChurnException(e, sys)
+
+
+class ModelEvaluationConfig:
+    def __init__(
+        self,
+        training_pipeline_config: TrainingPipelineConfig
+    ) -> None:
+        try:
+            self.model_evaluation_dir: str = os.path.join(
+                training_pipeline_config.artifact_dir,
+                training_pipeline.MODEL_EVALUATION_DIR_NAME
+            )
+            self.model_evaluation_report_file_path: str = os.path.join(
+                self.model_evaluation_dir,
+                training_pipeline.MODEL_EVALUATION_REPORT_FILE_NAME
+            )
+            self.primary_metric: str = (training_pipeline.MODEL_EVALUATION_PRIMARY_METRIC)
+            self.min_roc_auc: float = (training_pipeline.MODEL_EVALUATION_MIN_ROC_AUC)
+            self.min_precision: float = (training_pipeline.MODEL_EVALUATION_MIN_PRECISION)
+            self.min_recall: float = (training_pipeline.MODEL_EVALUATION_MIN_RECALL)
+            self.thresholds = training_pipeline.MODEL_EVALUATION_THRESHOLDS
+        except Exception as e:
+            raise CustomerChurnException(e, sys)
+        
