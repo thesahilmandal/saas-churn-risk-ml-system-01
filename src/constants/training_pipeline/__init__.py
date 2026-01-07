@@ -8,7 +8,6 @@ Defining common constant variable for training pipeline.
 """
 TARGET_COLUMN: str = "Churn"
 ARTIFACT_DIR: str = "artifacts"
-REFERENCE_SCHEMA_FILE_PATH = os.path.join('data_schema', 'schema.yaml')
 
 
 """
@@ -39,6 +38,7 @@ Data validation related constant start with DATA_VALIDATION var name
 """
 DATA_VALIDATION_DIR_NAME: str = '03_data_validation'
 DATA_VALIDATION_REPORT_FILE_NAME: str = 'report.json'
+DATA_VALIDATION_REFERENCE_SCHEMA = os.path.join('data_schema', 'schema.yaml')
 
 
 """

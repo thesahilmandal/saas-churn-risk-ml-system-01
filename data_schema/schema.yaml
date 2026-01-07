@@ -4,12 +4,6 @@ dataset:
 
 columns:
 
-  customerID:
-    expected_dtype: object
-    nullable: false
-    unique: true
-    severity: error
-
   gender:
     expected_dtype: object
     nullable: false
