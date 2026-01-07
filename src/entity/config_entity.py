@@ -5,6 +5,7 @@ from src.constants import training_pipeline
 from src.exception import CustomerChurnException
 
 
+
 class TrainingPipelineConfig:
     def __init__(self, timestamp: datetime | None = None) -> None:
         try:
@@ -70,10 +71,16 @@ class DataIngestionConfig:
                 self.data_ingestion_dir,
                 training_pipeline.DATA_INGESTION_META_FILE_NAME
             )
-            self.train_test_split_ratio: float = (
-                training_pipeline.DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO
+            self.train_temp_split_ratio: float = (
+                training_pipeline.DATA_INGESTION_TRAIN_TEMP_SPLIT_RATIO
+            )
+            self.test_val_split_ratio: float = (
+                training_pipeline.DATA_INGESTION_TEST_VAL_SPLIT_RATIO
             )
             self.random_state = training_pipeline.DATA_INGESTION_RANDOM_STATE
+            self.database_name = training_pipeline.DATA_INGESTION_DATABASE_NAME
+            self.collection_name = training_pipeline.DATA_INGESTION_COLLECTION_NAME
+            self.database_url = training_pipeline.DATA_INGESTION_MONGODB_URL
             
         except Exception as e:
             raise CustomerChurnException(e, sys)

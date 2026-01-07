@@ -273,7 +273,7 @@ class CustomerChurnETL:
                 records_inserted=inserted_count,
             )
 
-            logging.info("[ETL PIPELINE] ETL execution completed successfully.")
+            logging.info("[ETL PIPELINE] ETL execution completed successfully.\n")
 
         except Exception as e:
             raise CustomerChurnException(e, sys)
