@@ -32,14 +32,6 @@ class ETLconfig:
                 training_pipeline_config.artifact_dir,
                 training_pipeline.ETL_DIR_NAME
             )
-            self.raw_data_file_path: str = os.path.join(
-                self.etl_dir,
-                training_pipeline.ETL_RAW_DATA_FILE_NAME
-            )
-            self.raw_schema_file_path: str = os.path.join(
-                self.etl_dir,
-                training_pipeline.ETL_RAW_SCHEMA_FILE_NAME
-            )
             self.metadata_file_path: str = os.path.join(
                 self.etl_dir,
                 training_pipeline.ETL_METADATA_FILE_NAME

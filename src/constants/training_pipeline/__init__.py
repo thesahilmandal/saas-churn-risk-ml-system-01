@@ -13,8 +13,6 @@ REFERENCE_SCHEMA_FILE_PATH = os.path.join('data_schema', 'schema.yaml')
 ETL related constant start with ETL var name
 """
 ETL_DIR_NAME: str = "01_etl"
-ETL_RAW_DATA_FILE_NAME: str = "raw.csv"
-ETL_RAW_SCHEMA_FILE_NAME: str = "raw_schema.json"
 ETL_METADATA_FILE_NAME: str = "etl_metadata.json"
 
 """

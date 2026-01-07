@@ -2,26 +2,6 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ETLartifact:
-    """
-    Artifact generated after ETL stage.
-    Stores raw data, schema, and metadata schema paths.
-    """
-    raw_data_file_path: str
-    raw_schema_file_path: str
-    metadata_file_path: str
-
-    def __str__(self) -> str:
-        return (
-            "\nETLArtifact(\n"
-            f"  raw_data_file_path        = {self.raw_data_file_path}\n"
-            f"  raw_schema_file_path      = {self.raw_schema_file_path}\n"
-            f"  metadata_schema_file_path = {self.metadata_file_path}\n"
-            ")"
-        )
-
-
-@dataclass
 class DataIngestionArtifact:
     """
     Artifact generated after Data Ingestion stage.
