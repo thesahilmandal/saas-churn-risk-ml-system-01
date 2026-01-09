@@ -74,3 +74,17 @@ class DataTransformationArtifact:
             f"  metadata_file_path            = {self.metadata_file_path}\n"
             ")"
         )
+
+
+@dataclass(frozen=True)
+class ModelTrainingArtifact:
+    trained_models_dir: str
+    metadata_file_path: str
+
+    def __str__(self) -> str:
+        return (
+            "\nModelTrainingArtifact(\n"
+            f"  trained_models_dir = {self.trained_models_dir}\n"
+            f"  metadata_file_path = {self.metadata_file_path}\n"
+            ")"
+        )

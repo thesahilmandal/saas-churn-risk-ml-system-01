@@ -8,6 +8,9 @@ and pipeline-wide constants used across different stages.
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+
 
 # Load environment variables once at module import
 load_dotenv()
@@ -73,3 +76,38 @@ DATA_TRANSFORMATION_LINEAR_PREPROCESSOR_FILE_NAME: str = "lr_preprocessor.pkl"
 DATA_TRANSFORMATION_TREE_PREPROCESSOR_FILE_NAME: str = "tree_preprocessor.pkl"
 
 DATA_TRANSFORMATION_METADATA_FILE_NAME: str = "metadata.json"
+
+
+# -------------------------------------------------------------------------
+# Model Training Constants
+# -------------------------------------------------------------------------
+
+MODEL_TRAINING_DIR_NAME: str = "05_model_training"
+MODEL_TRAINING_TRAINED_MODELS_DIR_NAME: str = "trained_models"
+MODEL_TRAINING_METADATA_FILE_NAME: str = "metadata.json"
+MODEL_TRAINING_MODELS_REGISTERY: dict = {
+    "logistic_regression": LogisticRegression(random_state=42, n_jobs=-1),
+    "random_forest": RandomForestClassifier(random_state=42, n_jobs=-1),
+    "gradient_boosting": GradientBoostingClassifier(random_state=42)
+    }
+MODEL_TRAINING_MODELS_HYPERPARAMETERS = {
+    "logistic_regression": {
+        "C": [0.01, 0.1, 1.0, 10.0],
+        "penalty": ["l1", "l2"],
+        "max_iter": [100, 300, 500],
+        "solver": ["liblinear", "lbfgs", "saga"],
+    },
+    "random_forest": {
+        "n_estimators": [100, 300, 500],
+        "max_depth": [None, 10, 20, 30],
+        "min_samples_split": [2, 5, 10],
+        "min_samples_leaf": [1, 2, 4],
+        "bootstrap": [True, False],
+    },
+    "gradient_boosting": {
+        "n_estimators": [100, 300],
+        "learning_rate": [0.01, 0.05, 0.1],
+        "max_depth": [3, 5],
+        "subsample": [0.8, 1.0],
+    },   
+}

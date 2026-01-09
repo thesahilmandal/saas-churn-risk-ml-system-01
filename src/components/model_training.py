@@ -1,52 +1,63 @@
+"""
+Model Training Pipeline.
+
+Responsibilities:
+- Train candidate models using pre-built preprocessors
+- Perform hyperparameter optimization
+- Persist trained model pipelines
+- Generate and persist training metadata
+
+NOTE:
+This pipeline intentionally excludes model evaluation.
+"""
+
 import os
 import sys
 from datetime import datetime, timezone
 from typing import Dict
 
-import numpy as np
+import pandas as pd
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold
 
 from src.entity.config_entity import ModelTrainerConfig
 from src.entity.artifact_entity import (
+    DataIngestionArtifact,
     DataTransformationArtifact,
-    ModelTrainerArtifact,
+    ModelTrainingArtifact,
+)
+from src.constants.training_pipeline import (
+    TARGET_COLUMN,
+    MODEL_TRAINING_MODELS_REGISTERY,
+    MODEL_TRAINING_MODELS_HYPERPARAMETERS,
 )
 from src.exception import CustomerChurnException
 from src.logging import logging
-from src.utils.main_utils import write_json_file, load_numpy_array_data, save_object
+from src.utils.main_utils import save_object, load_object, write_json_file
 
 
 class ModelTrainer:
     """
-    Model Training Pipeline (Multi-Model Design).
-
-    Responsibilities:
-    - Train multiple candidate models
-    - Evaluate each model on validation data
-    - Persist all trained models
-    - Generate consolidated metrics and metadata
+    Handles model training and hyperparameter optimization.
     """
 
     def __init__(
         self,
         model_trainer_config: ModelTrainerConfig,
-        data_transformation_artifact: DataTransformationArtifact,
+        ingestion_artifact: DataIngestionArtifact,
+        transformation_artifact: DataTransformationArtifact,
     ) -> None:
         try:
-            logging.info("Initializing ModelTrainer pipeline (multi-model)")
+            logging.info("[MODEL TRAINER INIT] Initializing")
 
             self.config = model_trainer_config
-            self.transformation_artifact = data_transformation_artifact
-            self.primary_metric = self.config.primary_metric
+            self.ingestion_artifact = ingestion_artifact
+            self.transformation_artifact = transformation_artifact
 
-            # self.models_dir = os.path.join(
-            #     self.config.model_trainer_dir, self.config.trained_model_file_path
-            # )
+            os.makedirs(self.config.trained_models_dir, exist_ok=True)
 
-            os.makedirs(self.config.model_trainer_dir, exist_ok=True)
+            logging.info("[MODEL TRAINER INIT] Initialized successfully")
 
         except Exception as e:
             raise CustomerChurnException(e, sys)
@@ -54,118 +65,204 @@ class ModelTrainer:
     # ============================================================
     # Helpers
     # ============================================================
+    @staticmethod
+    def _read_csv(file_path: str) -> pd.DataFrame:
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        return pd.read_csv(file_path)
 
     @staticmethod
-    def _compute_metrics(y_true, y_pred, y_proba) -> Dict:
-        return {
-            "roc_auc": roc_auc_score(y_true, y_proba),
-            "precision": precision_score(y_true, y_pred),
-            "recall": recall_score(y_true, y_pred),
-            "f1_score": f1_score(y_true, y_pred),
+    def _build_pipeline(preprocessor, model) -> Pipeline:
+        return Pipeline(
+            steps=[
+                ("preprocessor", preprocessor),
+                ("model", model),
+            ]
+        )
+
+    # ============================================================
+    # Metadata
+    # ============================================================
+    def _generate_training_metadata(
+        self,
+        models_summary: Dict[str, Dict],
+        started_at_utc: str,
+        completed_at_utc: str,
+    ) -> None:
+        """
+        Generate and persist model training metadata.
+
+        Args:
+            models_summary (Dict): Training details for each model
+            started_at_utc (str): Pipeline start timestamp
+            completed_at_utc (str): Pipeline end timestamp
+        """
+        metadata = {
+            "stage": "model_training",
+            "training_strategy": {
+                "search_type": "RandomizedSearchCV",
+                "cv_strategy": "StratifiedKFold",
+                "cv_folds": 5,
+                "n_iter": 20,
+                "scoring_metric": "f1",
+                "random_state": 42,
+            },
+            "input_artifacts": {
+                "train_data_path": self.ingestion_artifact.train_file_path,
+                "linear_preprocessor_path": (
+                    self.transformation_artifact.linear_preprocessor_file_path
+                ),
+                "tree_preprocessor_path": (
+                    self.transformation_artifact.tree_preprocessor_file_path
+                ),
+            },
+            "models_trained": models_summary,
+            "output_artifacts": {
+                "trained_models_directory": self.config.trained_models_dir
+            },
+            "execution_info": {
+                "started_at_utc": started_at_utc,
+                "completed_at_utc": completed_at_utc,
+                "pipeline_version": "v1.0.0",
+            },
         }
 
-    def _get_models(self) -> Dict[str, object]:
+        write_json_file(
+            file_path=self.config.metadata_file_path,
+            content=metadata,
+        )
+
+        logging.info(
+            "[MODEL TRAINER METADATA] Metadata written | "
+            f"path={self.config.metadata_file_path}"
+        )
+
+    # ============================================================
+    # Training Logic
+    # ============================================================
+    def _train_model(
+        self,
+        model_name: str,
+        model,
+        param_grid: Dict,
+        preprocessor,
+        X: pd.DataFrame,
+        y: pd.Series,
+    ) -> Dict:
         """
-        Instantiate all candidate models.
+        Train a single model using RandomizedSearchCV.
         """
+        logging.info(f"[MODEL TRAINING] Started | model={model_name}")
+
+        pipeline = self._build_pipeline(preprocessor, model)
+
+        cv = StratifiedKFold(
+            n_splits=5,
+            shuffle=True,
+            random_state=42,
+        )
+
+        search = RandomizedSearchCV(
+            estimator=pipeline,
+            param_distributions={
+                f"model__{k}": v for k, v in param_grid.items()
+            },
+            n_iter=1,
+            scoring="f1",
+            cv=cv,
+            n_jobs=-1,
+            random_state=42,
+        )
+
+        search.fit(X, y)
+
+        trained_pipeline = search.best_estimator_
+
+        model_path = os.path.join(
+            self.config.trained_models_dir,
+            f"{model_name}.pkl",
+        )
+
+        save_object(model_path, trained_pipeline)
+
+        logging.info(
+            f"[MODEL TRAINING] Completed | model={model_name} | "
+            f"saved_at={model_path}"
+        )
+
         return {
-            "logistic_regression": LogisticRegression(
-                max_iter=10, solver="liblinear"
-            ),
-            "random_forest": RandomForestClassifier(
-                n_estimators=5,
-                max_depth=10,
-                random_state=42
-            ),
-            "gradient_boosting": GradientBoostingClassifier(
-                n_estimators=5,
-                learning_rate=0.1,
-                max_depth=3,
-                random_state=42
-            )
+            "model_class": model.__class__.__name__,
+            "artifact_path": model_path,
+            "best_hyperparameters": search.best_params_,
         }
 
     # ============================================================
-    # Run
+    # Pipeline Entry Point
     # ============================================================
-
-    def initiate_model_training(self) -> ModelTrainerArtifact:
+    def initiate_model_training(self) -> ModelTrainingArtifact:
+        """
+        Execute model training pipeline.
+        """
         try:
-            logging.info("Model Training pipeline started (multi-model)")
+            logging.info("[MODEL TRAINING PIPELINE] Started")
+            started_at_utc = datetime.now(timezone.utc).isoformat()
 
-            # ---------------- Load Transformed Data ----------------
-            X_train = load_numpy_array_data(self.transformation_artifact.x_train_file_path)
-            y_train = load_numpy_array_data(self.transformation_artifact.y_train_file_path)
-
-            X_val = load_numpy_array_data(self.transformation_artifact.x_val_file_path)
-            y_val = load_numpy_array_data(self.transformation_artifact.y_val_file_path)
-
-            logging.info(
-                f"Loaded data | "
-                f"X_train={X_train.shape}, X_val={X_val.shape}"
+            train_df = self._read_csv(
+                self.ingestion_artifact.train_file_path
             )
 
-            models = self._get_models()
-            metrics_report = {}
-
-            # ---------------- Train All Models ----------------
-            for model_name, model in models.items():
-                logging.info(f"Training model: {model_name}")
-
-                model.fit(X_train, y_train)
-
-                y_val_pred = model.predict(X_val)
-                y_val_proba = model.predict_proba(X_val)[:, 1]
-
-                metrics = self._compute_metrics(
-                    y_true=y_val,
-                    y_pred=y_val_pred,
-                    y_proba=y_val_proba
+            if TARGET_COLUMN not in train_df.columns:
+                raise ValueError(
+                    f"Target column '{TARGET_COLUMN}' not found in training data"
                 )
 
-                metrics_report[model_name] = metrics
+            X_train = train_df.drop(columns=[TARGET_COLUMN])
+            y_train = train_df[TARGET_COLUMN]
 
-                model_path = os.path.join(
-                    self.config.trained_model_file_path, f"{model_name}.pkl"
+            models_summary: Dict[str, Dict] = {}
+
+            for model_name, model in MODEL_TRAINING_MODELS_REGISTERY.items():
+                param_grid = MODEL_TRAINING_MODELS_HYPERPARAMETERS.get(
+                    model_name, {}
                 )
 
-                save_object(model_path, model)
-
-                logging.info(
-                    f"{model_name} | "
-                    f"{self.primary_metric}={metrics[self.primary_metric]:.4f}"
+                preprocessor_path = (
+                    self.transformation_artifact.linear_preprocessor_file_path
+                    if model_name == "logistic_regression"
+                    else self.transformation_artifact.tree_preprocessor_file_path
                 )
 
-            # ---------------- Persist Metrics Report ----------------
-            write_json_file(
-                file_path=self.config.training_metrics_file_path,
-                content=metrics_report
+                preprocessor = load_object(preprocessor_path)
+
+                model_metadata = self._train_model(
+                    model_name=model_name,
+                    model=model,
+                    param_grid=param_grid,
+                    preprocessor=preprocessor,
+                    X=X_train,
+                    y=y_train,
+                )
+
+                models_summary[model_name] = model_metadata
+
+            completed_at_utc = datetime.now(timezone.utc).isoformat()
+
+            self._generate_training_metadata(
+                models_summary=models_summary,
+                started_at_utc=started_at_utc,
+                completed_at_utc=completed_at_utc,
             )
 
-            # ---------------- Persist Metadata ----------------
-            metadata = {
-                "training_strategy": "multi_model",
-                "primary_metric": self.primary_metric,
-                "models_trained": list(models.keys()),
-                "trained_at_utc": datetime.now(timezone.utc).isoformat()
-            }
-
-            write_json_file(
-                file_path=self.config.model_metadata_file_path,
-                content=metadata
+            artifact = ModelTrainingArtifact(
+                trained_models_dir=self.config.trained_models_dir,
+                metadata_file_path=self.config.metadata_file_path
             )
 
-            artifact = ModelTrainerArtifact(
-                trained_models_dir=self.config.trained_model_file_path,
-                metrics_report_file_path=self.config.training_metrics_file_path,
-                metadata_file_path=self.config.model_metadata_file_path
-            )
-
-            logging.info("Model Training completed successfully (multi-model)")
-            logging.info(artifact)
+            logging.info("[MODEL TRAINING PIPELINE] Completed successfully")
+            logging.info(f"ModelTrainingArtifact: {artifact}")
 
             return artifact
 
         except Exception as e:
-            logging.error("Model Training pipeline failed")
+            logging.exception("[MODEL TRAINING PIPELINE] Failed")
             raise CustomerChurnException(e, sys)

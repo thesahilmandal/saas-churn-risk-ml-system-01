@@ -124,3 +124,24 @@ class DataTransformationConfig:
                     
         except Exception as e:
             raise CustomerChurnException(e, sys)
+
+
+class ModelTrainerConfig:
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+        try:
+            self.model_trainer_dir: str = os.path.join(
+                training_pipeline_config.artifact_dir,
+                training_pipeline.MODEL_TRAINING_DIR_NAME
+            )
+            self.trained_models_dir: str = os.path.join(
+                self.model_trainer_dir,
+                training_pipeline.MODEL_TRAINING_TRAINED_MODELS_DIR_NAME
+            )
+            self.metadata_file_path: str = os.path.join(
+                self.model_trainer_dir,
+                training_pipeline.MODEL_TRAINING_METADATA_FILE_NAME
+            )
+            self.models = training_pipeline.MODEL_TRAINING_MODELS_REGISTERY
+            self.models_hyperparameter = training_pipeline.MODEL_TRAINING_MODELS_HYPERPARAMETERS
+        except Exception as e:
+            raise CustomerChurnException(e, sys)
