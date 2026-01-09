@@ -1,11 +1,17 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataIngestionArtifact:
     """
-    Artifact generated after Data Ingestion stage.
-    Stores paths to ingested datasets and related metadata.
+    Artifact generated after the Data Ingestion stage.
+
+    Attributes:
+        train_file_path (str): Path to the training dataset
+        test_file_path (str): Path to the test dataset
+        val_file_path (str): Path to the validation dataset
+        schema_file_path (str): Path to the schema file
+        metadata_file_path (str): Path to metadata generated during ingestion
     """
     train_file_path: str
     test_file_path: str
@@ -16,7 +22,7 @@ class DataIngestionArtifact:
     def __str__(self) -> str:
         return (
             "\nDataIngestionArtifact(\n"
-            f"  train_file_path  = {self.train_file_path}\n"
+            f"  train_file_path    = {self.train_file_path}\n"
             f"  test_file_path     = {self.test_file_path}\n"
             f"  val_file_path      = {self.val_file_path}\n"
             f"  schema_file_path   = {self.schema_file_path}\n"
@@ -25,11 +31,14 @@ class DataIngestionArtifact:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataValidationArtifact:
     """
-    Artifact generated after Data Validation stage.
-    Stores validation status and validation report path.
+    Artifact generated after the Data Validation stage.
+
+    Attributes:
+        validation_status (bool): Whether validation passed or failed
+        validation_report (str): Path to validation report
     """
     validation_status: bool
     validation_report: str
@@ -43,76 +52,25 @@ class DataValidationArtifact:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataTransformationArtifact:
-    x_train_file_path: str
-    x_test_file_path: str
-    x_val_file_path: str
-    y_train_file_path: str
-    y_test_file_path: str
-    y_val_file_path: str
+    """
+    Artifact generated after the Data Transformation stage.
+
+    Attributes:
+        tree_preprocessor_file_path (str): Path to tree-based model preprocessor
+        linear_preprocessor_file_path (str): Path to linear model preprocessor
+        metadata_file_path (str): Path to transformation metadata
+    """
+    tree_preprocessor_file_path: str
+    linear_preprocessor_file_path: str
     metadata_file_path: str
-    preprocessor_file_path: str
 
     def __str__(self) -> str:
         return (
             "\nDataTransformationArtifact(\n"
-            f"  x_train_file_path = {self.x_train_file_path}\n"
-            f"  x_test_file_path = {self.x_test_file_path}\n"
-            f"  x_val_file_path = {self.x_val_file_path}\n"
-            f"  y_train_file_path = {self.y_train_file_path}\n"
-            f"  y_test_file_path = {self.y_test_file_path}\n"
-            f"  y_val_file_path = {self.y_val_file_path}\n"
-            f"  metadata_file_path = {self.metadata_file_path}\n"
-            f"  preprocessor_file_path = {self.preprocessor_file_path}\n"            
-            ")"
-        )
-
-
-@dataclass
-class ModelTrainerArtifact:
-    """
-    Artifact generated after Model Training stage (multi-model design).
-
-    Stores:
-    - Directory containing all trained models
-    - Path to consolidated training metrics report
-    - Path to model training metadata
-    """
-    trained_models_dir: str
-    metrics_report_file_path: str
-    metadata_file_path: str
-
-    def __str__(self) -> str:
-        return (
-            "\nModelTrainerArtifact(\n"
-            f"  trained_models_dir        = {self.trained_models_dir}\n"
-            f"  metrics_report_file_path  = {self.metrics_report_file_path}\n"
-            f"  metadata_file_path        = {self.metadata_file_path}\n"
-            ")"
-        )
-
-
-@dataclass
-class ModelEvaluationArtifact:
-    """
-    Artifact generated after Model Evaluation stage.
-
-    Stores:
-    - Path to evaluation decision report
-    - Selected model name
-    - Operating decision threshold for inference
-    """
-
-    evaluation_report_file_path: str
-    selected_model_name: str
-    operating_threshold: float
-
-    def __str__(self) -> str:
-        return (
-            "\nModelEvaluationArtifact(\n"
-            f"  evaluation_report_file_path = {self.evaluation_report_file_path}\n"
-            f"  selected_model_name         = {self.selected_model_name}\n"
-            f"  operating_threshold         = {self.operating_threshold}\n"
+            f"  tree_preprocessor_file_path   = {self.tree_preprocessor_file_path}\n"
+            f"  linear_preprocessor_file_path = {self.linear_preprocessor_file_path}\n"
+            f"  metadata_file_path            = {self.metadata_file_path}\n"
             ")"
         )

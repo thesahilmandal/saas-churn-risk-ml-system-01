@@ -40,7 +40,6 @@ class ETLconfig:
         except Exception as e:
             raise CustomerChurnException(e, sys)
 
-
 class DataIngestionConfig:
     def __init__(
         self,
@@ -69,7 +68,7 @@ class DataIngestionConfig:
             )
             self.metadata_file_path: str = os.path.join(
                 self.data_ingestion_dir,
-                training_pipeline.DATA_INGESTION_META_FILE_NAME
+                training_pipeline.DATA_INGESTION_METADATA_FILE_NAME
             )
             self.train_temp_split_ratio: float = (
                 training_pipeline.DATA_INGESTION_TRAIN_TEMP_SPLIT_RATIO
@@ -88,103 +87,40 @@ class DataIngestionConfig:
 
 class DataValidationConfig:
     def __init__(self, training_pipeline_config: TrainingPipelineConfig):
-        self.data_validation_dir: str = os.path.join(
+        try:
+            self.data_validation_dir: str = os.path.join(
             training_pipeline_config.artifact_dir,
             training_pipeline.DATA_VALIDATION_DIR_NAME,
-        )
-        self.validation_report_file_path: str = os.path.join(
-            self.data_validation_dir,
-            training_pipeline.DATA_VALIDATION_REPORT_FILE_NAME
-        )
-        self.reference_schema_file_path = training_pipeline.DATA_VALIDATION_REFERENCE_SCHEMA
-
-
-class DataTransformationConfig:
-    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
-        self.data_transformation_dir: str = os.path.join(
-            training_pipeline_config.artifact_dir,
-            training_pipeline.DATA_TRANSFORMATION_DIR_NAME
-        )
-        self.x_train_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRANSFORMATION_X_TRAIN
-        )
-        self.x_test_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRANSFORMATION_X_TEST
-        )
-        self.x_val_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRANSFORMATION_X_VAL
-        )
-        self.y_train_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRNSFORMATION_Y_TRAIN
-        )
-        self.y_test_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRNSFORMATION_Y_TEST
-        )
-        self.y_val_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRNSFORMATION_Y_VAL
-        )
-        self.metadata_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRANSFORMATION_METADATA
-        )
-        self.preprocessor_file_path: str = os.path.join(
-            self.data_transformation_dir,
-            training_pipeline.DATA_TRNSFORMATION_PREPROCESSOR
-        )
-
-
-class ModelTrainerConfig:
-    def __init__(
-        self,
-        training_pipeline_config: TrainingPipelineConfig
-    ) -> None:
-        try:
-            self.model_trainer_dir: str = os.path.join(
-                training_pipeline_config.artifact_dir,
-                training_pipeline.MODEL_TRAINER_DIR_NAME
             )
-            self.trained_model_file_path: str = os.path.join(
-                self.model_trainer_dir,
-                training_pipeline.MODEL_TRAINER_MODEL_FILE_NAME
+            self.validation_report_file_path: str = os.path.join(
+                self.data_validation_dir,
+                training_pipeline.DATA_VALIDATION_REPORT_FILE_NAME
             )
-            self.training_metrics_file_path: str = os.path.join(
-                self.model_trainer_dir,
-                training_pipeline.MODEL_TRAINER_TRAINING_METRICS_FILE_NAME
-            )
-            self.model_metadata_file_path: str = os.path.join(
-                self.model_trainer_dir,
-                training_pipeline.MODEL_TRAINER_METADATA_FILE_NAME
-            )
-            self.primary_metric: str = training_pipeline.MODEL_TRAINER_PRIMARY_METRIC
-        except Exception as e:
-            raise CustomerChurnException(e, sys)
+            self.reference_schema_file_path = training_pipeline.DATA_VALIDATION_REFERENCE_SCHEMA
 
-
-class ModelEvaluationConfig:
-    def __init__(
-        self,
-        training_pipeline_config: TrainingPipelineConfig
-    ) -> None:
-        try:
-            self.model_evaluation_dir: str = os.path.join(
-                training_pipeline_config.artifact_dir,
-                training_pipeline.MODEL_EVALUATION_DIR_NAME
-            )
-            self.model_evaluation_report_file_path: str = os.path.join(
-                self.model_evaluation_dir,
-                training_pipeline.MODEL_EVALUATION_REPORT_FILE_NAME
-            )
-            self.primary_metric: str = (training_pipeline.MODEL_EVALUATION_PRIMARY_METRIC)
-            self.min_roc_auc: float = (training_pipeline.MODEL_EVALUATION_MIN_ROC_AUC)
-            self.min_precision: float = (training_pipeline.MODEL_EVALUATION_MIN_PRECISION)
-            self.min_recall: float = (training_pipeline.MODEL_EVALUATION_MIN_RECALL)
-            self.thresholds = training_pipeline.MODEL_EVALUATION_THRESHOLDS
         except Exception as e:
             raise CustomerChurnException(e, sys)
         
+
+class DataTransformationConfig:
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+        try:
+            self.data_transformation_dir: str = os.path.join(
+                training_pipeline_config.artifact_dir,
+                training_pipeline.DATA_TRANSFORMATION_DIR_NAME
+            )
+            self.lr_preprocessor_file_path: str = os.path.join(
+                self.data_transformation_dir,
+                training_pipeline.DATA_TRANSFORMATION_LINEAR_PREPROCESSOR_FILE_NAME
+            )  
+            self.tree_preprocessor_file_path: str = os.path.join(
+                self.data_transformation_dir,
+                training_pipeline.DATA_TRANSFORMATION_TREE_PREPROCESSOR_FILE_NAME
+            )   
+            self.metadata_file_path: str = os.path.join(
+                self.data_transformation_dir,
+                training_pipeline.DATA_TRANSFORMATION_METADATA_FILE_NAME
+            )
+                    
+        except Exception as e:
+            raise CustomerChurnException(e, sys)

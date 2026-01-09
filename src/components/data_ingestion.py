@@ -86,6 +86,10 @@ class DataIngestion:
                 inplace=True
             )
 
+            df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+            df['SeniorCitizen'] = df['SeniorCitizen'].map({1: "Yes", 0: "No"})
+            df['Churn'] = df["Churn"].map({"Yes": 1, "No": 0})
+
             df.drop_duplicates(inplace=True)
             df.replace({"na": np.nan}, inplace=True)
 

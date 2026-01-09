@@ -11,9 +11,9 @@ columns:
     severity: warning
 
   SeniorCitizen:
-    expected_dtype: int64
+    expected_dtype: object
     nullable: false
-    allowed_values: [0, 1]
+    allowed_values: ["Yes", "No"]
     severity: error
 
   Partner:
@@ -120,7 +120,7 @@ columns:
     severity: warning
 
   Churn:
-    expected_dtype: object
+    expected_dtype: int64
     nullable: false
-    allowed_values: ["Yes", "No"]
+    allowed_values: [0, 1]
     severity: error

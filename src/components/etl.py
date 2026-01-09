@@ -277,15 +277,3 @@ class CustomerChurnETL:
 
         except Exception as e:
             raise CustomerChurnException(e, sys)
-
-
-if __name__ == "__main__":
-    try:
-        print("ETL pipeline started...")   
-        training_pipeline_config = TrainingPipelineConfig() 
-        etl_config = ETLconfig(training_pipeline_config)
-        etl = CustomerChurnETL(etl_config)
-        etl.initiate_etl()
-        print("ETL pipeline completed successfully.")
-    except Exception as e:
-        raise CustomerChurnException(e, sys)
