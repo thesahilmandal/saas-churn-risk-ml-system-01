@@ -77,7 +77,7 @@ class DataTransformationArtifact:
 
 
 @dataclass(frozen=True)
-class ModelTrainingArtifact:
+class ModelTrainerArtifact:
     trained_models_dir: str
     metadata_file_path: str
 
@@ -86,5 +86,23 @@ class ModelTrainingArtifact:
             "\nModelTrainingArtifact(\n"
             f"  trained_models_dir = {self.trained_models_dir}\n"
             f"  metadata_file_path = {self.metadata_file_path}\n"
+            ")"
+        )
+
+
+@dataclass(frozen=True)
+class ModelEvaluationArtifact:
+    report_file_path: str
+    selected_model_name: str
+    operating_threshold: float
+    metadata_file_path: str
+
+    def __str__(self) -> str:
+        return (
+            "\nModelEvaluationArtifact(\n"
+            f"  report_file_path    = {self.report_file_path}\n"
+            f"  selected_model      = {self.selected_model_name}\n"
+            f"  operating_threshold = {self.operating_threshold}\n"
+            f"  metadata_file_path  = {self.metadata_file_path}\n"
             ")"
         )

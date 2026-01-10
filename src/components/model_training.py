@@ -25,7 +25,7 @@ from src.entity.config_entity import ModelTrainerConfig
 from src.entity.artifact_entity import (
     DataIngestionArtifact,
     DataTransformationArtifact,
-    ModelTrainingArtifact,
+    ModelTrainerArtifact,
 )
 from src.constants.training_pipeline import (
     TARGET_COLUMN,
@@ -168,10 +168,11 @@ class ModelTrainer:
                 f"model__{k}": v for k, v in param_grid.items()
             },
             n_iter=1,
-            scoring="f1",
+            scoring="recall",
             cv=cv,
             n_jobs=-1,
             random_state=42,
+            verbose=2
         )
 
         search.fit(X, y)
@@ -199,7 +200,7 @@ class ModelTrainer:
     # ============================================================
     # Pipeline Entry Point
     # ============================================================
-    def initiate_model_training(self) -> ModelTrainingArtifact:
+    def initiate_model_training(self) -> ModelTrainerArtifact:
         """
         Execute model training pipeline.
         """
@@ -221,8 +222,8 @@ class ModelTrainer:
 
             models_summary: Dict[str, Dict] = {}
 
-            for model_name, model in MODEL_TRAINING_MODELS_REGISTERY.items():
-                param_grid = MODEL_TRAINING_MODELS_HYPERPARAMETERS.get(
+            for model_name, model in self.config.models.items():
+                param_grid = self.config.models_hyperparameter.get(
                     model_name, {}
                 )
 
@@ -253,7 +254,7 @@ class ModelTrainer:
                 completed_at_utc=completed_at_utc,
             )
 
-            artifact = ModelTrainingArtifact(
+            artifact = ModelTrainerArtifact(
                 trained_models_dir=self.config.trained_models_dir,
                 metadata_file_path=self.config.metadata_file_path
             )

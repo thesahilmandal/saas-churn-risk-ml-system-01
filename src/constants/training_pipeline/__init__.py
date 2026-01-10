@@ -7,6 +7,7 @@ and pipeline-wide constants used across different stages.
 
 from pathlib import Path
 import os
+import numpy as np
 from dotenv import load_dotenv
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -111,3 +112,19 @@ MODEL_TRAINING_MODELS_HYPERPARAMETERS = {
         "subsample": [0.8, 1.0],
     },   
 }
+
+
+# -------------------------------------------------------------------------
+# Model Evaluation Constants
+# -------------------------------------------------------------------------
+
+MODEL_EVALUATION_DIR_NAME: str = "06_model_evaluation"
+MODEL_EVALUATION_REPORT_FILE_NAME: str = "report.json"
+MODEL_EVALUATION_METADATA_FILE_NAME: str = "metadata.json"
+MODEL_EVALUATION_PRIMARY_METRIC = "recall"
+MODEL_EVALUATION_MIN_ROC_AUC = 0.70
+MODEL_EVALUATION_MIN_PRECISION = 0.40
+MODEL_EVALUATION_MIN_RECALL = 0.60
+MODEL_EVALUATION_THRESHOLDS = [
+    round(x, 2) for x in list(np.arange(0.1, 0.91, 0.05))
+]
