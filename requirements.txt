@@ -1,6 +1,27 @@
-pymongo[srv]==3.12
-certifi == 2025.11.12
-python_dotenv
-pandas
-kagglehub
-scikit-learn
+# ------------------------
+# Core ML & Data
+# ------------------------
+pandas>=1.5,<3.0
+numpy>=1.21,<2.0
+scikit-learn>=1.2,<2.0
+
+# ------------------------
+# Database & ETL
+# ------------------------
+pymongo[srv]>=3.12,<5.0
+certifi>=2023.7.22
+python-dotenv>=1.0.0
+kagglehub>=0.1.7
+
+# ------------------------
+# API & Serving
+# ------------------------
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.23,<1.0
+python-multipart>=0.0.9
+
+# ------------------------
+# Utilities
+# ------------------------
+pyyaml>=6.0
+joblib>=1.2
