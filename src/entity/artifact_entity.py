@@ -94,7 +94,6 @@ class ModelTrainerArtifact:
 class ModelEvaluationArtifact:
     report_file_path: str
     selected_trained_model_file_path: str
-    selected_preprocessor_file_path: str
     operating_threshold: float
     metadata_file_path: str
 
@@ -103,7 +102,6 @@ class ModelEvaluationArtifact:
             "\nModelEvaluationArtifact(\n"
             f"  report_file_path                 = {self.report_file_path}\n"
             f"  selected_trained_model_file_path = {self.selected_trained_model_file_path}\n"
-            f"  selected_preprocessor_file_path  = {self.selected_preprocessor_file_path}\n"
             f"  operating_threshold              = {self.operating_threshold}\n"
             f"  metadata_file_path               = {self.metadata_file_path}\n"
             ")"

@@ -152,14 +152,6 @@ class ModelEvaluation:
             key=lambda r: r["metrics"][self.config.primary_metric],
         )
 
-    def _resolve_preprocessor_path(self, model_name: str) -> str:
-        linear_models = {"logistic_regression"}
-
-        if model_name in linear_models:
-            return self.transformation_artifact.linear_preprocessor_file_path
-
-        return self.transformation_artifact.tree_preprocessor_file_path
-
     # ============================================================
     # Artifact Generators
     # ============================================================
@@ -334,10 +326,6 @@ class ModelEvaluation:
                 else None
             )
 
-            selected_preprocessor_path = self._resolve_preprocessor_path(
-                selected_model_name
-            )
-
             decision_report = self._generate_decision_report(
                 selected_model_name=selected_model_name,
                 selected_info=selected_info,
@@ -367,7 +355,6 @@ class ModelEvaluation:
             artifact = ModelEvaluationArtifact(
                 report_file_path=self.config.report_file_path,
                 selected_trained_model_file_path=selected_info["model_path"],
-                selected_preprocessor_file_path=selected_preprocessor_path,
                 operating_threshold=selected_info["threshold"],
                 metadata_file_path=self.config.metadata_file_path,
             )

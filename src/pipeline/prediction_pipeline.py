@@ -30,11 +30,7 @@ class CustomerChurnPredictor:
 
             self.evaluation_artifact = evaluation_artifact
 
-            (
-                self.model,
-                self.preprocessor,
-                self.threshold,
-            ) = self._load_artifacts()
+            (self.model, self.threshold) = self._load_artifacts()
 
             logging.info("[PREDICTION INIT] Initialized successfully")
 
@@ -54,9 +50,6 @@ class CustomerChurnPredictor:
             model = load_object(
                 self.evaluation_artifact.selected_trained_model_file_path
             )
-            preprocessor = load_object(
-                self.evaluation_artifact.selected_preprocessor_file_path
-            )
             threshold = self.evaluation_artifact.operating_threshold
 
             if not hasattr(model, "predict_proba"):
@@ -64,7 +57,7 @@ class CustomerChurnPredictor:
                     "Loaded model does not support predict_proba"
                 )
 
-            return model, preprocessor, threshold
+            return model, threshold
 
         except Exception as e:
             raise CustomerChurnException(e, sys)
@@ -98,12 +91,9 @@ class CustomerChurnPredictor:
 
             self._validate_input(input_df)
 
-            # Transform features
-            transformed_features = self.preprocessor.transform(input_df)
-
             # Predict probabilities
             churn_probabilities = (
-                self.model.predict_proba(transformed_features)[:, 1]
+                self.model.predict_proba(input_df)[:, 1]
             )
 
             churn_predictions = (

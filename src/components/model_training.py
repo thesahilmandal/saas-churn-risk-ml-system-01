@@ -27,11 +27,7 @@ from src.entity.artifact_entity import (
     DataTransformationArtifact,
     ModelTrainerArtifact,
 )
-from src.constants.training_pipeline import (
-    TARGET_COLUMN,
-    MODEL_TRAINING_MODELS_REGISTERY,
-    MODEL_TRAINING_MODELS_HYPERPARAMETERS,
-)
+from src.constants.training_pipeline import TARGET_COLUMN
 from src.exception import CustomerChurnException
 from src.logging import logging
 from src.utils.main_utils import save_object, load_object, write_json_file
