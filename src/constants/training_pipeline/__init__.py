@@ -23,6 +23,8 @@ load_dotenv()
 
 TARGET_COLUMN: str = "Churn"
 ARTIFACT_DIR: Path = Path("artifacts")
+FINAL_MODEL_PATH: Path = Path("final_model") / "model.pkl"
+OPERATING_THRESHOLD_FILE_PATH: Path = Path("final_model") / "operating_threshold.json"
 
 
 # -------------------------------------------------------------------------

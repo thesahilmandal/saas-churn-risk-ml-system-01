@@ -1,65 +1,82 @@
+import os, sys
+import pandas as pd
+
+from src.exception import CustomerChurnException
+from src.logging import logging
+from src.utils.main_utils import load_object, read_json_file
+from src.constants.training_pipeline import (
+    FINAL_MODEL_PATH,
+    OPERATING_THRESHOLD_FILE_PATH
+)
+
+"""
+Customer Churn Prediction Pipeline.
+
+Responsibilities:
+- Load final trained model and operating threshold
+- Validate inference input
+- Generate churn probabilities and predictions
+- Persist prediction outputs
+
+NOTE:
+This component is inference-only.
+No training, evaluation, or preprocessing logic is included here.
+"""
+
 import os
 import sys
-from typing import Tuple
+from typing import Union
 
 import pandas as pd
 
-from src.entity.artifact_entity import ModelEvaluationArtifact
 from src.exception import CustomerChurnException
 from src.logging import logging
-from src.utils.main_utils import load_object
+from src.utils.main_utils import load_object, read_json_file
+from src.constants.training_pipeline import (
+    FINAL_MODEL_PATH,
+    OPERATING_THRESHOLD_FILE_PATH,
+)
 
 
 class CustomerChurnPredictor:
     """
-    Customer Churn Prediction Pipeline.
+    Handles inference for the Customer Churn Prediction system.
 
-    Responsibilities:
-    - Load selected model, preprocessor, and threshold
-    - Validate input data
-    - Generate churn probabilities and predictions
-    - Persist prediction results
+    This class:
+    - Loads the selected trained model pipeline
+    - Applies the learned operating threshold
+    - Produces churn probabilities and binary predictions
     """
 
-    def __init__(
-        self,
-        evaluation_artifact: ModelEvaluationArtifact,
-    ) -> None:
-        try:
-            logging.info("[PREDICTION INIT] Initializing predictor")
-
-            self.evaluation_artifact = evaluation_artifact
-
-            (self.model, self.threshold) = self._load_artifacts()
-
-            logging.info("[PREDICTION INIT] Initialized successfully")
-
-        except Exception as e:
-            raise CustomerChurnException(e, sys)
-
-    # ============================================================
-    # Artifact Loading
-    # ============================================================
-    def _load_artifacts(self) -> Tuple[object, object, float]:
+    def __init__(self) -> None:
         """
-        Load model, preprocessor, and operating threshold.
+        Initialize predictor by loading model artifacts.
+
+        Raises:
+            CustomerChurnException: If model or threshold loading fails
         """
         try:
-            logging.info("[PREDICTION] Loading model artifacts")
+            logging.info("[PREDICTOR INIT] Loading trained model")
+            self.model = load_object(FINAL_MODEL_PATH)
 
-            model = load_object(
-                self.evaluation_artifact.selected_trained_model_file_path
+            logging.info("[PREDICTOR INIT] Loading operating threshold")
+            threshold_data = read_json_file(OPERATING_THRESHOLD_FILE_PATH)
+
+            if isinstance(threshold_data, dict):
+                self.threshold = threshold_data.get("operating_threshold")
+            else:
+                self.threshold = threshold_data
+
+            if self.threshold is None:
+                raise ValueError("Operating threshold not found or invalid")
+
+            logging.info(
+                "[PREDICTOR INIT] Predictor initialized | "
+                f"threshold={self.threshold}"
             )
-            threshold = self.evaluation_artifact.operating_threshold
-
-            if not hasattr(model, "predict_proba"):
-                raise AttributeError(
-                    "Loaded model does not support predict_proba"
-                )
-
-            return model, threshold
 
         except Exception as e:
+            logging.exception("[PREDICTOR INIT] Initialization failed")
             raise CustomerChurnException(e, sys)
 
     # ============================================================
@@ -68,8 +85,20 @@ class CustomerChurnPredictor:
     @staticmethod
     def _validate_input(input_df: pd.DataFrame) -> None:
         """
-        Basic input validation.
+        Validate inference input.
+
+        Args:
+            input_df (pd.DataFrame): Input features
+
+        Raises:
+            ValueError: If input is invalid
         """
+        if input_df is None:
+            raise ValueError("Input DataFrame is None")
+
+        if not isinstance(input_df, pd.DataFrame):
+            raise TypeError("Input must be a pandas DataFrame")
+
         if input_df.empty:
             raise ValueError("Input DataFrame is empty")
 
@@ -81,30 +110,37 @@ class CustomerChurnPredictor:
         Generate churn predictions.
 
         Args:
-            input_df (pd.DataFrame): Raw input features
+            input_df (pd.DataFrame): Feature DataFrame (no target column)
 
         Returns:
-            pd.DataFrame: Predictions with probabilities
+            pd.DataFrame: Original input with prediction columns appended
         """
         try:
-            logging.info("[PREDICTION] Prediction started")
+            logging.info(
+                "[PREDICTION] Prediction request received | "
+                f"rows={len(input_df)}"
+            )
 
             self._validate_input(input_df)
 
-            # Predict probabilities
-            churn_probabilities = (
-                self.model.predict_proba(input_df)[:, 1]
-            )
+            if not hasattr(self.model, "predict_proba"):
+                raise AttributeError(
+                    "Loaded model does not support probability prediction"
+                )
 
+            churn_probabilities = self.model.predict_proba(input_df)[:, 1]
             churn_predictions = (
                 churn_probabilities >= self.threshold
             ).astype(int)
 
             output_df = input_df.copy()
-            output_df["churn_probability"] = churn_probabilities
+            output_df["churn_probability"] = churn_probabilities.round(4)
             output_df["churn_prediction"] = churn_predictions
 
-            logging.info("[PREDICTION] Prediction completed successfully")
+            logging.info(
+                "[PREDICTION] Prediction completed | "
+                f"churn_rate={round(churn_predictions.mean(), 4)}"
+            )
 
             return output_df
 
@@ -121,19 +157,36 @@ class CustomerChurnPredictor:
         output_file_path: str,
     ) -> None:
         """
-        Save predictions to disk.
+        Persist prediction results to disk.
+
+        Args:
+            prediction_df (pd.DataFrame): Prediction output
+            output_file_path (str): Destination CSV path
         """
         try:
+            if prediction_df is None or prediction_df.empty:
+                raise ValueError("Prediction DataFrame is empty or None")
+
             os.makedirs(
                 os.path.dirname(output_file_path),
                 exist_ok=True,
             )
+
             prediction_df.to_csv(output_file_path, index=False)
 
             logging.info(
-                "[PREDICTION] Predictions saved | path=%s",
-                output_file_path,
+                "[PREDICTION SAVE] Predictions saved | "
+                f"path={output_file_path}, rows={len(prediction_df)}"
             )
 
         except Exception as e:
+            logging.exception("[PREDICTION SAVE] Failed to save predictions")
             raise CustomerChurnException(e, sys)
+
+
+# testing
+if __name__ == "__main__":
+    test_df = pd.read_csv(r"/workspaces/saas-churn-risk-ml-system-01/rough/processed_data_02.csv")
+    predictor = CustomerChurnPredictor()
+    output = predictor.predict(test_df)
+    print(output)

@@ -12,22 +12,6 @@ from src.logging import logging
 
 
 # ==============================
-# Date Utilities
-# ==============================
-
-def format_ordinal_date(dt: datetime) -> str:
-    """
-    Convert datetime to ordinal date format.
-    Example: 21st_dec_2024
-    """
-    day = dt.day
-    suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
-    month = dt.strftime("%b").lower()
-    year = dt.year
-    return f"{day}{suffix}_{month}_{year}"
-
-
-# ==============================
 # Internal Helpers
 # ==============================
 

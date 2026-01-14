@@ -39,10 +39,10 @@ from src.entity.artifact_entity import (
     DataTransformationArtifact,
     ModelEvaluationArtifact,
 )
-from src.constants.training_pipeline import TARGET_COLUMN
+from src.constants.training_pipeline import TARGET_COLUMN, FINAL_MODEL_PATH, OPERATING_THRESHOLD_FILE_PATH
 from src.exception import CustomerChurnException
 from src.logging import logging
-from src.utils.main_utils import load_object, write_json_file
+from src.utils.main_utils import load_object, write_json_file, save_object
 
 
 PIPELINE_VERSION = "v1.0.0"
@@ -352,6 +352,15 @@ class ModelEvaluation:
                 metadata,
             )
 
+            save_object(
+                file_path=FINAL_MODEL_PATH,
+                obj=load_object(selected_info["model_path"])
+            )
+            write_json_file(
+                file_path=OPERATING_THRESHOLD_FILE_PATH,
+                content=selected_info["threshold"]
+            )
+            
             artifact = ModelEvaluationArtifact(
                 report_file_path=self.config.report_file_path,
                 selected_trained_model_file_path=selected_info["model_path"],
