@@ -25,7 +25,6 @@ No training, evaluation, or preprocessing logic is included here.
 
 import os
 import sys
-from typing import Union
 
 import pandas as pd
 

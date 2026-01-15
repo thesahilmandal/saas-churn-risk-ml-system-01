@@ -5,8 +5,6 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, UploadFile, File, HTTPException, status
 from fastapi.responses import StreamingResponse
 
-from src.logging import logging
-from src.exception import CustomerChurnException
 from src.pipeline.prediction_pipeline import CustomerChurnPredictor
 from src.api.schemas import BatchPredictionRequest
 from src.api.services.prediction_service import PredictionService

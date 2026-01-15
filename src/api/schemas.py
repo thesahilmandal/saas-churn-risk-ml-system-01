@@ -10,14 +10,16 @@ class BatchPredictionRequest(BaseModel):
         ..., description="List of customer feature dictionaries"
     )
 
-
 class PredictionSummary(BaseModel):
+    model_config = {
+        "protected_namespaces": ()
+    }
+
     total_records: int
     churn_rate: float
     model_version: str
     latency_ms: float
     request_id: str
-
 
 class BatchPredictionResponse(BaseModel):
     summary: PredictionSummary

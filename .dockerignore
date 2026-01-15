@@ -1,0 +1,39 @@
+# ========================
+# Virtual Environments & Secrets
+# ========================
+venv/
+.env
+
+# ========================
+# Git & CI Metadata
+# ========================
+.git/
+.gitignore
+.github/
+
+# ========================
+# Development & IDE
+# ========================
+.vscode/
+.DS_Store
+
+# ========================
+# Python Cache
+# ========================
+__pycache__/
+*.pyc
+
+# ========================
+# Training & Experimentation
+# ========================
+artifacts/
+logs/
+rough/
+test_mongodb.py
+main_0.py
+
+# ========================
+# Project Metadata (Not Needed at Runtime)
+# ========================
+README.md
+setup.py
