@@ -32,7 +32,8 @@ OPERATING_THRESHOLD_FILE_PATH: Path = Path("final_model") / "operating_threshold
 # -------------------------------------------------------------------------
 
 ETL_DIR_NAME: str = "01_etl"
-ETL_METADATA_FILE_NAME: str = "etl_metadata.json"
+ETL_METADATA_FILE_NAME: str = "metadata.json"
+ETL_RAW_DATA_DIR_NAME: str = "raw_data"
 
 
 # -------------------------------------------------------------------------

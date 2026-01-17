@@ -1,14 +1,3 @@
-import os, sys
-import pandas as pd
-
-from src.exception import CustomerChurnException
-from src.logging import logging
-from src.utils.main_utils import load_object, read_json_file
-from src.constants.training_pipeline import (
-    FINAL_MODEL_PATH,
-    OPERATING_THRESHOLD_FILE_PATH
-)
-
 """
 Customer Churn Prediction Pipeline.
 

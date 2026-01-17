@@ -37,6 +37,10 @@ class ETLconfig:
                 self.etl_dir,
                 training_pipeline.ETL_METADATA_FILE_NAME
             )
+            self.raw_data_dir: str = os.path.join(
+                self.etl_dir,
+                training_pipeline.ETL_RAW_DATA_DIR_NAME
+            )
         except Exception as e:
             raise CustomerChurnException(e, sys)
 
