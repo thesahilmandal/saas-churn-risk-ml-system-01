@@ -138,3 +138,5 @@ project_folder.py
 main_0.py
 test_mongodb.py
 final_model/
+aws/
+awscliv2.zip
