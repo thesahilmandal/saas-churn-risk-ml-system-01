@@ -234,7 +234,7 @@ class TrainingPipeline:
             self._run_model_training()
             self._run_model_evaluation()
 
-            self._sync_artifacts()
+            # self._sync_artifacts()
 
             logging.info(
                 "[PIPELINE] Execution completed successfully | "

@@ -41,8 +41,10 @@ class ETLconfig:
                 self.etl_dir,
                 training_pipeline.ETL_RAW_DATA_DIR_NAME
             )
+            self.delete_old_data = training_pipeline.ETL_DELETE_OLD_DATA
         except Exception as e:
             raise CustomerChurnException(e, sys)
+
 
 class DataIngestionConfig:
     def __init__(
@@ -80,7 +82,7 @@ class DataIngestionConfig:
             self.test_val_split_ratio: float = (
                 training_pipeline.DATA_INGESTION_TEST_VAL_SPLIT_RATIO
             )
-            self.random_state = training_pipeline.DATA_INGESTION_RANDOM_STATE
+            self.random_state = training_pipeline.RANDOM_STATE
             self.database_name = training_pipeline.DATA_INGESTION_DATABASE_NAME
             self.collection_name = training_pipeline.DATA_INGESTION_COLLECTION_NAME
             self.database_url = training_pipeline.DATA_INGESTION_MONGODB_URL
@@ -147,6 +149,9 @@ class ModelTrainerConfig:
             )
             self.models = training_pipeline.MODEL_TRAINING_MODELS_REGISTERY
             self.models_hyperparameter = training_pipeline.MODEL_TRAINING_MODELS_HYPERPARAMETERS
+            self.primary_metric = training_pipeline.MODEL_TRAINING_PRIMARY_METRIC
+            self.decision_threshold = training_pipeline.MODEL_TRAINING_DECISION_THRESHOLD
+            self.n_iter = training_pipeline.MODEL_TRAINING_N_ITER
         except Exception as e:
             raise CustomerChurnException(e, sys)
     

@@ -2,7 +2,7 @@
 Data Validation Pipeline.
 
 Responsibilities:
-- Validate generated schema against a reference schema
+- Validate generated dataset schema against a reference schema
 - Apply severity-aware validation rules
 - Persist validation report and status artifact
 """
@@ -10,7 +10,7 @@ Responsibilities:
 import os
 import sys
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 import yaml
 
@@ -26,22 +26,21 @@ from src.utils.main_utils import read_json_file, write_json_file
 
 class DataValidation:
     """
-    Validates dataset schema against a predefined reference schema.
+    Validates generated dataset schema against a reference schema.
 
-    This component enforces structural and semantic constraints
-    before downstream ML processing.
+    Acts as a strict gatekeeper before downstream ML processing.
     """
 
     def __init__(
         self,
-        data_validation_config: DataValidationConfig,
-        data_ingestion_artifact: DataIngestionArtifact,
+        config: DataValidationConfig,
+        ingestion_artifact: DataIngestionArtifact,
     ) -> None:
         try:
-            logging.info("[DATA VALIDATION INIT] Initializing pipeline")
+            logging.info("[DATA VALIDATION INIT] Initializing")
 
-            self.config = data_validation_config
-            self.ingestion_artifact = data_ingestion_artifact
+            self.config = config
+            self.ingestion_artifact = ingestion_artifact
 
             if not os.path.exists(self.config.reference_schema_file_path):
                 raise FileNotFoundError(
@@ -59,9 +58,6 @@ class DataValidation:
     # ============================================================
     @staticmethod
     def _read_yaml(file_path: str) -> Dict[str, Any]:
-        """
-        Read YAML file safely.
-        """
         try:
             with open(file_path, "r") as file:
                 return yaml.safe_load(file)
@@ -71,6 +67,101 @@ class DataValidation:
             )
             raise CustomerChurnException(e, sys)
 
+    @staticmethod
+    def _escalate_status(current: str, severity: str) -> str:
+        if severity == "error":
+            return "error"
+        if current != "error":
+            return "warning"
+        return current
+
+    # ============================================================
+    # Dataset-Level Validation
+    # ============================================================
+    def _validate_dataset_constraints(
+        self,
+        generated_schema: Dict[str, Any],
+        reference_schema: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        results = {"status": "pass", "details": []}
+        constraints = reference_schema.get("dataset_constraints", {})
+
+        feature_count = len(generated_schema) - 1  # exclude target
+
+        if "expected_feature_count" in constraints:
+            if feature_count != constraints["expected_feature_count"]:
+                results["status"] = "warning"
+                results["details"].append(
+                    f"Expected {constraints['expected_feature_count']} features, "
+                    f"found {feature_count}"
+                )
+
+        return results
+
+    # ============================================================
+    # Column-Level Validation
+    # ============================================================
+    def _validate_column(
+        self,
+        column: str,
+        rules: Dict[str, Any],
+        gen_col: Dict[str, Any],
+        dtype_mapping: Dict[str, List[str]],
+    ) -> Dict[str, Any]:
+        result = {"status": "pass", "details": []}
+        severity = rules.get("severity", "error")
+
+        # ---------- Required ----------
+        if rules.get("required", False) and gen_col is None:
+            result["status"] = "error"
+            result["details"].append("Missing required column")
+            return result
+
+        # ---------- Dtype ----------
+        expected_dtype = rules.get("expected_dtype")
+        if expected_dtype:
+            allowed_raw = dtype_mapping.get(expected_dtype, [])
+            if gen_col["dtype"] not in allowed_raw:
+                result["status"] = self._escalate_status(
+                    result["status"], severity
+                )
+                result["details"].append(
+                    f"Invalid dtype '{gen_col['dtype']}', "
+                    f"expected semantic type '{expected_dtype}'"
+                )
+
+        # ---------- Nullability ----------
+        if rules.get("nullable") is False and gen_col.get("nullable") is True:
+            result["status"] = self._escalate_status(
+                result["status"], severity
+            )
+            result["details"].append(
+                "Null values present in non-nullable column"
+            )
+
+        # ---------- Numeric Range ----------
+        if "min" in rules and "min" in gen_col:
+            if gen_col["min"] < rules["min"]:
+                result["status"] = "warning"
+                result["details"].append(
+                    f"Observed min {gen_col['min']} < expected {rules['min']}"
+                )
+
+        if "max" in rules and "max" in gen_col:
+            if gen_col["max"] > rules["max"]:
+                result["status"] = "warning"
+                result["details"].append(
+                    f"Observed max {gen_col['max']} > expected {rules['max']}"
+                )
+
+        # ---------- Allowed Values ----------
+        if "allowed_values" in rules:
+            result["details"].append(
+                "Allowed values declared; enforcement deferred to data-level validation"
+            )
+
+        return result
+
     # ============================================================
     # Schema Validation
     # ============================================================
@@ -79,110 +170,47 @@ class DataValidation:
         generated_schema: Dict[str, Any],
         reference_schema: Dict[str, Any],
     ) -> Dict[str, Any]:
-        """
-        Compare generated schema against reference schema.
-        """
+
         logging.info("[DATA VALIDATION] Schema validation started")
 
-        if "columns" not in reference_schema:
-            raise CustomerChurnException(
-                KeyError(
-                    "Invalid reference schema: missing required key 'columns'"
-                ),
-                sys,
-            )
+        ref_columns = reference_schema["columns"]
+        dtype_mapping = reference_schema.get("dtype_mapping", {})
 
         results: Dict[str, Any] = {}
         error_count = 0
         warning_count = 0
 
-        reference_columns = reference_schema["columns"]
+        # ---------- Dataset-level ----------
+        dataset_result = self._validate_dataset_constraints(
+            generated_schema, reference_schema
+        )
+        results["_dataset"] = dataset_result
 
-        # ---------- Required Columns ----------
-        for column, rules in reference_columns.items():
-            col_result = {
-                "status": "pass",
-                "details": []
-            }
+        # ---------- Column-level ----------
+        for column, rules in ref_columns.items():
+            gen_col = generated_schema.get(column)
+            col_result = self._validate_column(
+                column, rules, gen_col, dtype_mapping
+            )
 
-            if column not in generated_schema:
-                col_result["status"] = "error"
-                col_result["details"].append("Missing required column")
-                results[column] = col_result
+            if col_result["status"] == "error":
                 error_count += 1
-                continue
-
-            gen_col = generated_schema[column]
-
-            # ---------- Data Type ----------
-            expected_dtype = rules.get("expected_dtype")
-            raw_dtype_allowed = rules.get("raw_dtype_allowed")
-            gen_dtype = gen_col.get("dtype")
-
-            if expected_dtype and gen_dtype != expected_dtype:
-                if raw_dtype_allowed and gen_dtype == raw_dtype_allowed:
-                    col_result["status"] = "warning"
-                    col_result["details"].append(
-                        f"Raw dtype '{gen_dtype}' differs from expected "
-                        f"'{expected_dtype}' but is allowed"
-                    )
-                    warning_count += 1
-                else:
-                    col_result["status"] = "error"
-                    col_result["details"].append(
-                        f"Invalid dtype '{gen_dtype}', expected '{expected_dtype}'"
-                    )
-                    error_count += 1
-
-            # ---------- Nullability ----------
-            if rules.get("nullable") is False and gen_col.get("nullable") is True:
-                severity = rules.get("severity", "error")
-                col_result["details"].append(
-                    "Null values found in non-nullable column"
-                )
-
-                if severity == "error":
-                    col_result["status"] = "error"
-                    error_count += 1
-                else:
-                    if col_result["status"] != "error":
-                        col_result["status"] = "warning"
-                    warning_count += 1
-
-            # ---------- Numeric Range ----------
-            if "min" in rules and "min" in gen_col:
-                if gen_col["min"] < rules["min"]:
-                    if col_result["status"] != "error":
-                        col_result["status"] = "warning"
-                    col_result["details"].append(
-                        f"Minimum value {gen_col['min']} below expected {rules['min']}"
-                    )
-                    warning_count += 1
-
-            if "max" in rules and "max" in gen_col:
-                if gen_col["max"] > rules["max"]:
-                    if col_result["status"] != "error":
-                        col_result["status"] = "warning"
-                    col_result["details"].append(
-                        f"Maximum value {gen_col['max']} above expected {rules['max']}"
-                    )
-                    warning_count += 1
+            elif col_result["status"] == "warning":
+                warning_count += 1
 
             results[column] = col_result
 
-        # ---------- Extra Columns ----------
+        # ---------- Unexpected columns ----------
         for column in generated_schema:
-            if column not in reference_columns:
+            if column not in ref_columns:
                 results[column] = {
                     "status": "warning",
-                    "details": [
-                        "Unexpected column not defined in reference schema"
-                    ]
+                    "details": ["Unexpected column not defined in reference schema"],
                 }
                 warning_count += 1
 
         logging.info(
-            "[DATA VALIDATION] Schema validation completed | "
+            "[DATA VALIDATION] Completed | "
             f"errors={error_count}, warnings={warning_count}"
         )
 
@@ -190,17 +218,15 @@ class DataValidation:
             "column_checks": results,
             "summary": {
                 "errors": error_count,
-                "warnings": warning_count
-            }
+                "warnings": warning_count,
+                "passed": error_count == 0,
+            },
         }
 
     # ============================================================
     # Pipeline Entry Point
     # ============================================================
     def initiate_data_validation(self) -> DataValidationArtifact:
-        """
-        Execute the data validation pipeline.
-        """
         try:
             logging.info("[DATA VALIDATION PIPELINE] Started")
 
@@ -212,34 +238,31 @@ class DataValidation:
                 self.config.reference_schema_file_path
             )
 
-            validation_result = self._validate_schema(
+            validation = self._validate_schema(
                 generated_schema, reference_schema
             )
 
             report = {
                 "validation_type": "schema_validation",
-                "results": validation_result["column_checks"],
-                "summary": validation_result["summary"],
-                "validated_at_utc": datetime.now(timezone.utc).isoformat()
+                "summary": validation["summary"],
+                "column_results": validation["column_checks"],
+                "validated_at_utc": datetime.now(timezone.utc).isoformat(),
             }
 
             write_json_file(
-                self.config.validation_report_file_path,
-                report
+                self.config.validation_report_file_path, report
             )
 
-            validation_status = validation_result["summary"]["errors"] == 0
-
             artifact = DataValidationArtifact(
-                validation_status=validation_status,
-                validation_report=self.config.validation_report_file_path
+                validation_status=validation["summary"]["passed"],
+                validation_report=self.config.validation_report_file_path,
             )
 
             logging.info(
                 "[DATA VALIDATION PIPELINE] Completed | "
-                f"status={validation_status}"
+                f"passed={artifact.validation_status}"
             )
-            logging.info(f"DataValidationArtifact: {artifact}")
+            logging.info(artifact)
 
             return artifact
 

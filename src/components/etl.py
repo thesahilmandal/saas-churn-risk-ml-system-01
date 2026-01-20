@@ -168,7 +168,7 @@ class CustomerChurnETL:
                 df_clean[column] = df_clean[column].str.strip()
 
             df_clean["data_source"] = self.data_source
-            df_clean["ingested_at_utc"] = datetime.utcnow().isoformat()
+            df_clean["ingested_at_utc"] = datetime.utcnow().date().isoformat()
 
             records = df_clean.to_dict(orient="records")
 
@@ -205,6 +205,10 @@ class CustomerChurnETL:
             ) as client:
 
                 collection = client[self.database_name][self.collection_name]
+
+                if self.config.delete_old_data:
+                    collection.delete_many({})
+
                 result = collection.insert_many(records, ordered=True)
 
                 inserted_count = len(result.inserted_ids)

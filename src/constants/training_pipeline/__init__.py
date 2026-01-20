@@ -26,6 +26,7 @@ ARTIFACT_DIR: Path = Path("artifacts")
 FINAL_MODEL_PATH: Path = Path("final_model") / "model.pkl"
 OPERATING_THRESHOLD_FILE_PATH: Path = Path("final_model") / "operating_threshold.json"
 TRAINING_BUCKET_NAME: str = "saas-customer-churn-ml"
+RANDOM_STATE = 42
 
 # -------------------------------------------------------------------------
 # ETL Constants
@@ -34,6 +35,7 @@ TRAINING_BUCKET_NAME: str = "saas-customer-churn-ml"
 ETL_DIR_NAME: str = "01_etl"
 ETL_METADATA_FILE_NAME: str = "metadata.json"
 ETL_RAW_DATA_DIR_NAME: str = "raw_data"
+ETL_DELETE_OLD_DATA: bool = True
 
 
 # -------------------------------------------------------------------------
@@ -52,7 +54,6 @@ DATA_INGESTION_METADATA_FILE_NAME: str = "metadata.json"
 DATA_INGESTION_TRAIN_TEMP_SPLIT_RATIO: float = 0.30
 DATA_INGESTION_TEST_VAL_SPLIT_RATIO: float = 0.50
 
-DATA_INGESTION_RANDOM_STATE: int = 42
 
 # Environment variables (validated at runtime, not import time)
 DATA_INGESTION_DATABASE_NAME: str | None = os.getenv("MONGODB_DATABASE")
@@ -90,8 +91,8 @@ MODEL_TRAINING_DIR_NAME: str = "05_model_training"
 MODEL_TRAINING_TRAINED_MODELS_DIR_NAME: str = "trained_models"
 MODEL_TRAINING_METADATA_FILE_NAME: str = "metadata.json"
 MODEL_TRAINING_MODELS_REGISTERY: dict = {
-    "logistic_regression": LogisticRegression(random_state=42, n_jobs=-1),
-    "random_forest": RandomForestClassifier(random_state=42, n_jobs=-1),
+    "logistic_regression": LogisticRegression(random_state=RANDOM_STATE, n_jobs=-1),
+    "random_forest": RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=-1),
     "gradient_boosting": GradientBoostingClassifier(random_state=42)
     }
 MODEL_TRAINING_MODELS_HYPERPARAMETERS = {
@@ -115,6 +116,9 @@ MODEL_TRAINING_MODELS_HYPERPARAMETERS = {
         "subsample": [0.8, 1.0],
     },   
 }
+MODEL_TRAINING_PRIMARY_METRIC = "recall"
+MODEL_TRAINING_DECISION_THRESHOLD = 0.5
+MODEL_TRAINING_N_ITER = 1
 
 
 # -------------------------------------------------------------------------

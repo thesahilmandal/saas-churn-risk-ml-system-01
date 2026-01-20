@@ -43,6 +43,8 @@ class DataIngestionArtifact:
             f"  metadata_file_path = {self.metadata_file_path}\n"
             ")"
         )
+    
+
 
 
 @dataclass(frozen=True)
